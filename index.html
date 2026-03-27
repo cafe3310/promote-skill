@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Promote Skill — Prompt 发音纠错器</title>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --border: #30363d;
+      --accent: #58a6ff;
+      --green: #3fb950;
+      --red: #f85149;
+      --yellow: #d29922;
+      --text: #e6edf3;
+      --muted: #8b949e;
+      --radius: 12px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans",
+                   Helvetica, Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* ── header ─────────────────────────────────────────────────── */
+    header {
+      width: 100%;
+      max-width: 860px;
+      padding: 3rem 1.5rem 0;
+      text-align: center;
+    }
+
+    .badge {
+      display: inline-block;
+      background: linear-gradient(135deg, #f85149 0%, #d29922 100%);
+      color: #fff;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 0.25rem 0.75rem;
+      border-radius: 999px;
+      margin-bottom: 1rem;
+    }
+
+    h1 {
+      font-size: clamp(2rem, 6vw, 3.5rem);
+      font-weight: 800;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+    }
+
+    h1 .strike {
+      position: relative;
+      color: var(--red);
+    }
+
+    h1 .strike::after {
+      content: "";
+      position: absolute;
+      left: 0; right: 0;
+      top: 50%;
+      height: 4px;
+      background: var(--red);
+      border-radius: 2px;
+      transform: rotate(-3deg);
+    }
+
+    h1 .correct {
+      color: var(--green);
+    }
+
+    .subtitle {
+      margin-top: 1rem;
+      font-size: 1.1rem;
+      color: var(--muted);
+    }
+
+    /* ── main content ────────────────────────────────────────────── */
+    main {
+      width: 100%;
+      max-width: 860px;
+      padding: 2.5rem 1.5rem 4rem;
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+
+    /* ── card ────────────────────────────────────────────────────── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.75rem 2rem;
+    }
+
+    .card h2 {
+      font-size: 1rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin-bottom: 1.25rem;
+    }
+
+    /* ── pronunciation table ─────────────────────────────────────── */
+    .pron-table {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .pron-cell {
+      border-radius: 8px;
+      padding: 1.25rem 1.5rem;
+      text-align: center;
+    }
+
+    .pron-cell.wrong {
+      background: rgba(248, 81, 73, 0.08);
+      border: 1px solid rgba(248, 81, 73, 0.3);
+    }
+
+    .pron-cell.right {
+      background: rgba(63, 185, 80, 0.08);
+      border: 1px solid rgba(63, 185, 80, 0.3);
+    }
+
+    .pron-cell .word {
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+
+    .pron-cell.wrong .word { color: var(--red); }
+    .pron-cell.right .word { color: var(--green); }
+
+    .pron-cell .ipa {
+      font-size: 1.1rem;
+      margin-top: 0.4rem;
+      font-family: "Noto Serif", Georgia, serif;
+      color: var(--text);
+    }
+
+    .pron-cell .label {
+      font-size: 0.75rem;
+      margin-top: 0.6rem;
+      color: var(--muted);
+    }
+
+    /* ── try it button ───────────────────────────────────────────── */
+    .play-btn {
+      width: 100%;
+      margin-top: 1.25rem;
+      padding: 0.8rem 1.5rem;
+      background: linear-gradient(135deg, var(--accent) 0%, #1f6feb 100%);
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .play-btn:hover { opacity: 0.88; transform: translateY(-1px); }
+    .play-btn:active { transform: translateY(0); }
+    .play-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* ── install card ────────────────────────────────────────────── */
+    .install-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .step {
+      display: flex;
+      gap: 1rem;
+      align-items: flex-start;
+    }
+
+    .step-num {
+      flex-shrink: 0;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #0d1117;
+      font-weight: 700;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .step-body { flex: 1; }
+    .step-body p { color: var(--muted); font-size: 0.9rem; margin-bottom: 0.6rem; }
+
+    .copy-box {
+      display: flex;
+      align-items: center;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .copy-box code {
+      flex: 1;
+      padding: 0.65rem 1rem;
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      font-size: 0.85rem;
+      color: var(--text);
+      white-space: pre-wrap;
+      word-break: break-all;
+      line-height: 1.5;
+    }
+
+    .copy-btn {
+      flex-shrink: 0;
+      padding: 0.65rem 0.9rem;
+      background: transparent;
+      border: none;
+      border-left: 1px solid var(--border);
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: color 0.2s, background 0.2s;
+    }
+
+    .copy-btn:hover { color: var(--text); background: rgba(255,255,255,0.05); }
+
+    /* ── how it works ────────────────────────────────────────────── */
+    .os-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .os-row {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+    }
+
+    .os-icon { font-size: 1.4rem; width: 2rem; text-align: center; }
+
+    .os-info strong { display: block; font-size: 0.9rem; }
+    .os-info span   { font-size: 0.8rem; color: var(--muted); font-family: monospace; }
+
+    /* ── footer ──────────────────────────────────────────────────── */
+    footer {
+      margin-top: auto;
+      padding: 1.5rem;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.82rem;
+      border-top: 1px solid var(--border);
+      width: 100%;
+    }
+
+    footer a { color: var(--accent); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+
+    /* ── responsive ──────────────────────────────────────────────── */
+    @media (max-width: 540px) {
+      .pron-table { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="badge">🔊 整活神器 · GitHub Copilot Agent Skill</div>
+  <h1>
+    <span class="strike">promote</span>
+    &nbsp;≠&nbsp;
+    <span class="correct">prompt</span>
+  </h1>
+  <p class="subtitle">一个帮你分清 <strong>prompt</strong> 和 <strong>promote</strong> 的 Copilot Agent Skill</p>
+</header>
+
+<main>
+
+  <!-- 发音对比 -->
+  <div class="card">
+    <h2>📖 发音对比</h2>
+    <div class="pron-table">
+      <div class="pron-cell wrong">
+        <div class="word">promote</div>
+        <div class="ipa">/prəˈmoʊt/</div>
+        <div class="label">❌ 你以为你在说的</div>
+      </div>
+      <div class="pron-cell right">
+        <div class="word">prompt</div>
+        <div class="ipa">/prɒmpt/</div>
+        <div class="label">✅ 你其实想说的</div>
+      </div>
+    </div>
+    <button class="play-btn" id="playBtn" onclick="speak()">
+      🔊 在浏览器中播放正确发音
+    </button>
+  </div>
+
+  <!-- 安装方法 -->
+  <div class="card">
+    <h2>⚡ 安装方法</h2>
+    <div class="install-steps">
+
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <p>将以下这句话发给你的 GitHub Copilot Agent，即可完成安装：</p>
+          <div class="copy-box">
+            <code id="install-msg">请从 https://github.com/cafe3310/promote-skill 安装 promote skill，将 .github/agents/promote.md 复制到我的仓库中。</code>
+            <button class="copy-btn" onclick="copyText('install-msg', this)" title="复制">📋</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <p>或者直接克隆并手动复制 skill 文件：</p>
+          <div class="copy-box">
+            <code id="clone-cmd">cp .github/agents/promote.md /your-repo/.github/agents/promote.md</code>
+            <button class="copy-btn" onclick="copyText('clone-cmd', this)" title="复制">📋</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <p>安装完成后，跟你的 Copilot 说一句 <strong>"promote 怎么读"</strong>，静候奇迹发生 🎉</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 工作原理 -->
+  <div class="card">
+    <h2>🛠️ 工作原理</h2>
+    <p style="color:var(--muted);font-size:0.9rem;margin-bottom:1rem;">
+      Skill 激活后，自动检测操作系统，调用最直接的 TTS 命令朗读纠错内容：
+    </p>
+    <div class="os-list">
+      <div class="os-row">
+        <div class="os-icon">🍎</div>
+        <div class="os-info">
+          <strong>macOS</strong>
+          <span>say -v Ting-Ting "我注意你刚才说了 promote…"</span>
+        </div>
+      </div>
+      <div class="os-row">
+        <div class="os-icon">🐧</div>
+        <div class="os-info">
+          <strong>Linux</strong>
+          <span>espeak-ng -v zh "…"  /  espeak "…" (fallback)</span>
+        </div>
+      </div>
+      <div class="os-row">
+        <div class="os-icon">🪟</div>
+        <div class="os-info">
+          <strong>Windows</strong>
+          <span>PowerShell SAPI SpeechSynthesizer</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  Made with ❤️ (and mild frustration) by
+  <a href="https://github.com/cafe3310">cafe3310</a> ·
+  <a href="https://github.com/cafe3310/promote-skill">Source on GitHub</a>
+</footer>
+
+<script>
+  // NOTE: ZH_TEXT is intentionally duplicated from scripts/tts.py — the
+  // browser version is self-contained and requires no server round-trip.
+  function speak() {
+    const btn = document.getElementById('playBtn');
+    if (!('speechSynthesis' in window)) {
+      btn.textContent = '❌ 你的浏览器不支持 TTS';
+      return;
+    }
+    window.speechSynthesis.cancel();
+
+    const text = "我注意你刚才说了 promote，你可能是想说 prompt。prompt 的发音是 prɒmpt，不是 prəˈmoʊt。";
+    const utter = new SpeechSynthesisUtterance(text);
+
+    // Try to find a Chinese voice
+    const voices = window.speechSynthesis.getVoices();
+    const zhVoice = voices.find(v => v.lang.startsWith('zh'));
+    if (zhVoice) utter.voice = zhVoice;
+    else utter.lang = 'zh-CN';
+
+    btn.disabled = true;
+    btn.textContent = '🔊 播放中…';
+    utter.onend = () => {
+      btn.disabled = false;
+      btn.textContent = '🔊 在浏览器中播放正确发音';
+    };
+    utter.onerror = () => {
+      btn.disabled = false;
+      btn.textContent = '❌ 播放失败，请检查系统音量';
+    };
+    window.speechSynthesis.speak(utter);
+  }
+
+  // Voices are loaded asynchronously in some browsers; the list is refreshed
+  // automatically and will be available by the time the user clicks the button.
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.getVoices(); // warm up the voices list
+  }
+
+  function copyText(id, btn) {
+    const text = document.getElementById(id).textContent.trim();
+    navigator.clipboard.writeText(text).then(() => {
+      const orig = btn.textContent;
+      btn.textContent = '✅';
+      setTimeout(() => { btn.textContent = orig; }, 1500);
+    }).catch(() => {
+      btn.textContent = '❌';
+      setTimeout(() => { btn.textContent = '📋'; }, 1500);
+    });
+  }
+</script>
+</body>
+</html>
