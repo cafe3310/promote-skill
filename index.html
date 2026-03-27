@@ -280,6 +280,32 @@
     footer a { color: var(--accent); text-decoration: none; }
     footer a:hover { text-decoration: underline; }
 
+    /* ── github star button ──────────────────────────────────────── */
+    .star-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 1.75rem;
+      padding: 0.7rem 1.6rem;
+      background: linear-gradient(135deg, #f0c53f 0%, #e09c10 100%);
+      color: #0d1117;
+      font-size: 1rem;
+      font-weight: 700;
+      text-decoration: none;
+      border-radius: 999px;
+      box-shadow: 0 0 0 3px rgba(240, 197, 63, 0.35), 0 4px 16px rgba(240, 197, 63, 0.3);
+      transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
+      letter-spacing: 0.01em;
+    }
+
+    .star-btn:hover {
+      transform: translateY(-2px) scale(1.03);
+      box-shadow: 0 0 0 4px rgba(240, 197, 63, 0.5), 0 8px 24px rgba(240, 197, 63, 0.4);
+      opacity: 0.95;
+    }
+
+    .star-btn:active { transform: translateY(0) scale(1); }
+
     /* ── responsive ──────────────────────────────────────────────── */
     @media (max-width: 540px) {
       .pron-table { grid-template-columns: 1fr; }
@@ -296,6 +322,9 @@
     <span class="correct">prompt</span>
   </h1>
   <p class="subtitle">一个帮你分清 <strong>prompt</strong> 和 <strong>promote</strong> 的 Copilot Agent Skill</p>
+  <a class="star-btn" href="https://github.com/cafe3310/promote-skill" target="_blank" rel="noopener noreferrer">
+    ⭐ 在 GitHub 查看 &amp; Star
+  </a>
 </header>
 
 <main>
