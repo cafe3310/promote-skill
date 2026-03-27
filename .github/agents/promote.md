@@ -24,13 +24,13 @@ allowed-tools: Bash
 python3 scripts/tts.py
 ```
 
-2. 脚本会自动检测操作系统并选择最适合的 TTS 方式：
+2. 脚本会优先播放仓库根目录下的 `voice.mp3` 预生成语音，如不可用则自动检测操作系统并选择最适合的 TTS 方式：
    - **macOS**：使用内置 `say` 命令（优先中文 Ting-Ting 语音）
    - **Linux**：使用 `espeak-ng`（中文）或 `espeak`（英文）
    - **Windows**：使用 PowerShell SAPI TTS（英文）
 
 3. TTS 播放内容：
-   > 「我注意你刚才说了 promote，你可能是想说 prompt。prompt 的发音是 /prɒmpt/，不是 /prəˈmoʊt/。」
+   > 「我注意你刚才说了 promote，你可能是想说 prompt。模型提示词这个单词的发音是 prompt，不是 promote。都 2026 年了，别再读错了！」
 
 4. 播放结束后，回复用户：
-   > "已为你播放 **prompt** 的正确发音 🔊。记住：是 **/prɒmpt/**，不是 promote！"
+   > "已为你播放 **prompt** 的正确发音 🔊。记住：模型提示词是 **prompt**，不是 promote！"
