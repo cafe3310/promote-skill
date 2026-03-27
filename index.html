@@ -347,6 +347,10 @@
     <button class="play-btn" id="playBtn" onclick="speak()">
       🔊 在浏览器中播放正确发音
     </button>
+    <p style="margin-top:0.9rem;font-size:0.8rem;color:var(--muted);text-align:center;">
+      语音由 <a href="https://huggingface.co/inclusionAI/Ming-omni-tts-16.8B-A3B" target="_blank" rel="noopener noreferrer">Ming-omni-tts-16.8B-A3B</a> 生成，
+      你可以在 <a href="https://huggingface.co/spaces/cafe3310/ling-open-studio" target="_blank" rel="noopener noreferrer">ling-open-studio</a> 生成语音。
+    </p>
   </div>
 
   <!-- 安装方法 -->
@@ -426,42 +430,20 @@
 </footer>
 
 <script>
-  // NOTE: ZH_TEXT is intentionally duplicated from scripts/tts.py — the
-  // browser version is self-contained and requires no server round-trip.
   function speak() {
     const btn = document.getElementById('playBtn');
-    if (!('speechSynthesis' in window)) {
-      btn.textContent = '❌ 你的浏览器不支持 TTS';
-      return;
-    }
-    window.speechSynthesis.cancel();
-
-    const text = "我注意你刚才说了 promote，你可能是想说 prompt。prompt 的发音是 prɒmpt，不是 prəˈmoʊt。";
-    const utter = new SpeechSynthesisUtterance(text);
-
-    // Try to find a Chinese voice
-    const voices = window.speechSynthesis.getVoices();
-    const zhVoice = voices.find(v => v.lang.startsWith('zh'));
-    if (zhVoice) utter.voice = zhVoice;
-    else utter.lang = 'zh-CN';
-
+    const audio = new Audio('voice.mp3');
     btn.disabled = true;
     btn.textContent = '🔊 播放中…';
-    utter.onend = () => {
+    audio.onended = () => {
       btn.disabled = false;
       btn.textContent = '🔊 在浏览器中播放正确发音';
     };
-    utter.onerror = () => {
+    audio.onerror = () => {
       btn.disabled = false;
       btn.textContent = '❌ 播放失败，请检查系统音量';
     };
-    window.speechSynthesis.speak(utter);
-  }
-
-  // Voices are loaded asynchronously in some browsers; the list is refreshed
-  // automatically and will be available by the time the user clicks the button.
-  if ('speechSynthesis' in window) {
-    window.speechSynthesis.getVoices(); // warm up the voices list
+    audio.play();
   }
 
   function copyText(id, btn) {
